@@ -5,25 +5,29 @@ import "fmt"
 type Maybe[T any] struct {
 	value    T
 	hasValue bool
+	checked  bool // HasValue() vas called (experimental)
 }
 
 func (m Maybe[T]) String() string {
 	if m.HasValue() {
-		return fmt.Sprintf("Just %v", m.FromJust())
+		v, _ := m.FromJust()
+		return fmt.Sprintf("Just %v", v)
 	} else {
 		return "Nothing"
 	}
 }
 
-func (m Maybe[T]) HasValue() bool {
+func (m *Maybe[T]) HasValue() bool {
+	m.checked = true
 	return m.hasValue
 }
 
-func (m Maybe[T]) FromJust() T {
+func (m *Maybe[T]) FromJust() (T, error) {
 	if m.hasValue {
-		return m.value
+		return m.value, nil
 	} else {
-		panic("Nothing")
+		m.checked = false
+		return *new(T), fmt.Errorf("Nothing")
 	}
 }
 
